@@ -3,6 +3,7 @@ import cors from 'cors'
 import {ChatOpenAI} from "@langchain/openai"
 import dotenv from 'dotenv'
 import {PromptTemplate} from "@langchain/core/prompts";
+import axios from 'axios';
 
 
 dotenv.config();
@@ -14,31 +15,43 @@ app.use(express.json());
 let chatHistory = [];
 
 const model = new ChatOpenAI({
+    max_tokens: 30,
+    temperature: 0.5,
     azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
     azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
     azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
     azureOpenAIApiDeploymentName: process.env.ENGINE_NAME,
-    max_tokens: 30,
-    temperature: 0.5,
+
 })
 
 
 app.post('/chat', async (req, res) => {
+
+    const userLocation = 'Istanbul'
+
     const {query} = req.body;
     if (!query) {
         return res.status(400).json({error: 'give me a fucking query'})
     }
+    const weatherKey = process.env.WHEATHER_API_KEY;
+    const weatherAPI = `https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&appid=${weatherKey}`;
+    const weatherShow = await axios.get(weatherAPI)
+
+    if (weatherShow.status !== 200) {
+        throw new Error(`Weather API request failed with status: ${weatherShow.status}`)
+    }
+
+    const temperature = weatherShow.data.current.temp_c;
 
     // promp eng. toepassen om betere resultaten te krijgen.
     let prompt = `You are a holiday planner chatbot. Your goal is to help users plan their holidays with a good conversation. 
-                         Based on their preferences, you will suggest activities and destinations ${chatHistory} ${query}`
+                         Based on their preferences, you will suggest activities and destinations ${temperature} ${chatHistory} ${query}`
 
     try {
         const response = await model.invoke(prompt)
         res.json({response: response.content})
         chatHistory.push(`user: ${query}`);
         chatHistory.push(`bot: ${response.content}`)
-
 
     } catch (err) {
         res.status(500).json({err: 'we are failing help!'})
