@@ -1,10 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <title>ZINK</title>
 </head>
 <body>
-$END$
+<div class='app'>
+    <section class='side-bar'>
+        <button>+ New Chat</button>
+        <ul class='history'>
+            <li>xxx</li>
+        </ul>
+        <nav>Made by Furkan</nav>
+    </section>
+    <section class='main'>
+        <h1>Vacation Planner</h1>
+        <ul class='field'>
+            <li id="messageElement">
+                <div class="loader"></div>
+                <div class="streaming"></div>
+            </li>
+        </ul>
+        <div class='bottom-section'>
+            <div class='input-container'>
+                <input id="userInput" type="text"/>
+                <div id='submit'>submit</div>
+            </div>
+        </div>
+    </section>
+
+</div>
 </body>
 </html>
