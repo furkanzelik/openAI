@@ -65,8 +65,8 @@ app.post('/chat', async (req, res) => {
         const response = await model.invoke(prompt);
         res.json({response: response.content});
 
-        chatHistory.push(`user: ${query}`);  // chat role voor de user
-        chatHistory.push(`bot: ${response.content}`); // chat role voor de bot
+        chatHistory.push(`user: ${query}`);  // chat role voor de user als in de presentatie
+        chatHistory.push(`bot: ${response.content}`); // chat role voor de bot als in de presentatie
 
     } catch (err) {
         console.error(err);

@@ -25,6 +25,7 @@ async function getMessage() {
 
     // loading spinner laten zien
     loader.style.display = 'block';
+    loader.style.display = 'center';
 
 // fetch request
     const options = {
@@ -42,6 +43,7 @@ async function getMessage() {
     try {
         const response = await fetch('http://localhost:8000/chat', options);
         const aiResponse = await response.json();
+
         console.log(userInput);
         console.log(aiResponse);
 
