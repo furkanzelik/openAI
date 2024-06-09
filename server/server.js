@@ -1,10 +1,8 @@
-import express from 'express'
-import cors from 'cors'
-import {ChatOpenAI} from "@langchain/openai"
-import dotenv from 'dotenv'
-import {PromptTemplate} from "@langchain/core/prompts";
+import express from 'express';
+import cors from 'cors';
+import {ChatOpenAI} from "@langchain/openai";
+import dotenv from 'dotenv';
 import axios from 'axios';
-
 
 dotenv.config();
 
@@ -21,43 +19,60 @@ const model = new ChatOpenAI({
     azureOpenAIApiVersion: process.env.OPENAI_API_VERSION,
     azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
     azureOpenAIApiDeploymentName: process.env.ENGINE_NAME,
-
-})
-
+});
 
 app.post('/chat', async (req, res) => {
-
-    const userLocation = 'Istanbul'
-
+    const userLocation = 'Istanbul';
     const {query} = req.body;
+
     if (!query) {
-        return res.status(400).json({error: 'give me a fucking query'})
+        return res.status(400).json({error: 'Please provide a query'});
     }
+
     const weatherKey = process.env.WHEATHER_API_KEY;
-    const weatherAPI = `https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&appid=${weatherKey}`;
-    const weatherShow = await axios.get(weatherAPI)
-
-    if (weatherShow.status !== 200) {
-        throw new Error(`Weather API request failed with status: ${weatherShow.status}`)
-    }
-
-    const temperature = weatherShow.data.current.temp_c;
-
-    // promp eng. toepassen om betere resultaten te krijgen.
-    let prompt = `You are a holiday planner chatbot. Your goal is to help users plan their holidays with a good conversation. 
-                         Based on their preferences, you will suggest activities and destinations ${temperature} ${chatHistory} ${query}`
+    const weatherAPI = `https://api.openweathermap.org/data/2.5/weather?q=${userLocation}&appid=${weatherKey}&units=metric`;
 
     try {
-        const response = await model.invoke(prompt)
-        res.json({response: response.content})
-        chatHistory.push(`user: ${query}`);
-        chatHistory.push(`bot: ${response.content}`)
+        const weatherShow = await axios.get(weatherAPI);
+
+        if (weatherShow.status !== 200) {
+            new Error(`Weather API request failed with status: ${weatherShow.status}`);
+        }
+
+        const temperature = weatherShow.data.main.temp;
+
+        let prompt = `
+        You are a holiday planner chatbot. Your goal is to help users plan their holidays with a good conversation. Based on their preferences, you will suggest activities and destinations.
+        Here is the current weather information for the user's location:
+        Location: ${userLocation}
+        Temperature: ${temperature}°C
+
+        The user may ask about:
+        - Suggested destinations
+        - Activities based on the weather
+        - General travel advice
+
+        You should provide personalized responses based on the user's preferences and the current weather conditions. 
+
+        Here is the conversation history so far:
+        ${chatHistory}
+
+        User query: ${query}
+
+        Please respond as a helpful holiday planner chatbot.
+        `;
+
+        const response = await model.invoke(prompt);
+        res.json({response: response.content});
+
+        chatHistory.push(`user: ${query}`);  // chat role voor de user
+        chatHistory.push(`bot: ${response.content}`); // chat role voor de bot
 
     } catch (err) {
-        res.status(500).json({err: 'we are failing help!'})
+        console.error(err);
+        res.status(500).json({error: 'Something went wrong, please try again later'});
     }
-})
-
+});
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

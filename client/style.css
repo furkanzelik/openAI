@@ -114,7 +114,7 @@ input:focus{
 }
 
 .field li.user {
-    background-color: green;
+    background-color: #0aad9a;
     text-align: left;
     padding-right: 20px;
     margin-right: 10px;
@@ -123,10 +123,11 @@ input:focus{
 }
 
 .field li.bot {
-    background-color: green;
+    background-color: #0aad9a;
     text-align: left;
     padding-left: 20px;
     margin-left: 10px;
+    margin-right: 2rem;
 
 }
 

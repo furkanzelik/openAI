@@ -1,4 +1,11 @@
-document.getElementById('submit').addEventListener('click', getMessage);
+const submitButton = document.getElementById('submit');
+const userInputElement = document.getElementById('userInput');
+const loader = document.querySelector('.loader');
+const messageField = document.querySelector('.field');
+
+// Event listener toevoegen aan de submit button
+submitButton.addEventListener('click', getMessage);
+
 let disabledButtton = false
 
 async function getMessage() {
@@ -8,15 +15,16 @@ async function getMessage() {
         return;
     }
 
-    const userInput = document.getElementById('userInput').value;
+    const userInput = userInputElement.value;
+
     // validatie controleren of het veld leeg is
-    if (!userInput){
-        alert('Veld mag niet leeg blijven')
+    if (!userInput) {
+        alert('Please enter a message')
         return;
     }
 
     // loading spinner laten zien
-    document.querySelector('.loader').style.display = 'block';
+    loader.style.display = 'block';
 
 // fetch request
     const options = {
@@ -38,7 +46,7 @@ async function getMessage() {
         console.log(aiResponse);
 
         // loading spinner verbergen
-        document.querySelector('.loader').style.display = 'none';
+        loader.style.display = 'none';
 
         // ai response en userInput tonen
         addMessageToField(userInput, 'user')
@@ -47,19 +55,17 @@ async function getMessage() {
     } catch (error) {
         console.error(error);
         // Als er een fout optreedt, verberg dan ook de spinner
-        document.querySelector('.loader').style.display = 'none';
+        loader.style.display = 'none';
     } finally {
         disabledButtton = false;
     }
 }
 
 
-function addMessageToField(message,sender){
+function addMessageToField(message, sender) {
     const showMessage = document.createElement('li');
 
     showMessage.textContent = message;
     showMessage.classList.add(sender)
-
-    const field = document.querySelector('.field')
-    field.appendChild(showMessage)
+    messageField.appendChild(showMessage)
 }
