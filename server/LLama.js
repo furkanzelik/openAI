@@ -1,18 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import {ChatOpenAI} from "@langchain/openai";
-// const { LMStudioClient } = require("@lmstudio/sdk");
 import dotenv from 'dotenv';
 import axios from 'axios';
 dotenv.config();
-
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 let chatHistory = [];
-
 
 const model = new ChatOpenAI({
     max_tokens: 30,
@@ -22,7 +19,6 @@ const model = new ChatOpenAI({
     azureOpenAIApiInstanceName: process.env.INSTANCE_NAME,
     azureOpenAIApiDeploymentName: process.env.ENGINE_NAME,
 });
-
 
 app.post('/chat', async (req, res) => {
     const userLocation = 'Istanbul';
@@ -39,7 +35,7 @@ app.post('/chat', async (req, res) => {
         const weatherShow = await axios.get(weatherAPI);
 
         if (weatherShow.status !== 200) {
-            new Error(`Weather API request failed with status: ${weatherShow.status}`);
+            throw new Error(`Weather API request failed with status: ${weatherShow.status}`);
         }
 
         const temperature = weatherShow.data.main.temp;
@@ -55,7 +51,7 @@ app.post('/chat', async (req, res) => {
         - Activities based on the weather
         - General travel advice
 
-        You should provide personalized responses based on the user's preferences and the current weather conditions. 
+        You should provide personalized responses based on the user's preferences and the current weather conditions.
 
         Here is the conversation history so far:
         ${chatHistory}
@@ -65,12 +61,26 @@ app.post('/chat', async (req, res) => {
         Please respond as a helpful holiday planner.
         `;
 
-        const response = await model.invoke(prompt);
-        res.json({response: response.content});
+        const options = {
+            method: 'POST',
+            body: JSON.stringify({
+                messages: query
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
 
-        chatHistory.push(`user: ${query}`);  // chat role voor de user als in de presentatie
-        chatHistory.push(`bot: ${response.content}`); // chat role voor de bot als in de presentatie
-
+        try {
+            const response = await fetch('http://localhost:1234/v1/chat/completions', options);
+            const aiResponse = await response.json();
+            res.json({response: aiResponse});
+            chatHistory.push(`user: ${query}`);
+            chatHistory.push(`bot: ${aiResponse}`);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({error: 'Something went wrong, please try again later'});
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({error: 'Something went wrong, please try again later'});
