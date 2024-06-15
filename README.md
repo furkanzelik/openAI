@@ -4,6 +4,8 @@ Welcome to VacationPlanner, a chatbot powered by GPT-3.5 that helps you discover
 
 ## How to Use
 
+clone de github repository and follow the steps below to run the project on your local machine.
+
 ### 1. Get OpenAI API Key
 
 - Sign up for an account on OpenAI.
